@@ -53,6 +53,6 @@ A arquitetura do banco de dados permite que a equipe de marketing realize consul
 
 ### 📁 Arquivos do Repositório
 
-* `script_vendas_fidelizacao.sql`: Script completo para criação do banco de dados.
+* `ciclo_vendas_supermercado.sql`: Script completo para criação do banco de dados.
 * `modelo_conceitual.png`: Diagrama do Modelo Conceitual.
 * `modelo_logico.png`: Diagrama do Modelo Lógico com chaves e tipos de dados.
