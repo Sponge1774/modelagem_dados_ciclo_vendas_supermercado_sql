@@ -55,4 +55,4 @@ A arquitetura do banco de dados permite que a equipe de marketing realize consul
 
 * `ciclo_vendas_supermercado.sql`: Script completo para criação do banco de dados.
 * `modelo_conceitual-supermercado1.png`: Diagrama do Modelo Conceitual.
-* `modelo_logico.png`: Diagrama do Modelo Lógico com chaves e tipos de dados.
+* `modelo_logico_ciclo_vendas_supermercado.png`: Diagrama do Modelo Lógico com chaves e tipos de dados.
