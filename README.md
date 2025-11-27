@@ -9,8 +9,8 @@ A solução visa transformar os dados transacionais em insumos analíticos pront
 ## 💡 O Diagnóstico do Problema
 
 O diagnóstico inicial identificou a necessidade de estruturar a base de dados para resolver dois problemas principais:
-1.  **Falta de Rastreabilidade:** Inconsistência nos registros de vendas que dificultava a auditoria fiscal e a exatidão dos dados de estoque.
-2.  **Impossibilidade de Análise de Fidelização:** Não existia uma conexão clara entre as vendas e os clientes cadastrados, impedindo a contagem de pontos e a segmentação para campanhas de fidelidade.
+1.  **Falta de Rastreabilidade:** Inconsistência nos registros de vendas que dificultava a auditoria fiscal e a exatidão dos dados de estoque.
+2.  **Impossibilidade de Análise de Fidelização:** Não existia uma conexão clara entre as vendas e os clientes cadastrados, impedindo a contagem de pontos e a segmentação para campanhas de fidelidade.
 
 ## 📋 Levantamento de Requisitos
 
@@ -19,6 +19,50 @@ O projeto foi guiado pelos seguintes requisitos de negócio:
 * **Venda Segura:** Registro de cada transação com data/hora exata e vinculação a um colaborador.
 * **Detalhamento Fiscal:** Armazenamento do preço unitário e quantidade de cada item vendido (relação N:N entre Vendas e Produtos).
 * **Mecanismo de Pontuação:** Capacidade de rastrear pontos e histórico de fidelidade de cada cliente.
+
+---
+
+### Mapeamento Detalhado: Perguntas de Negócio para Solução Técnica
+
+Esta seção detalha como as perguntas de levantamento de requisitos foram traduzidas em decisões estruturais no modelo físico.
+
+#### 1. Rastreabilidade e Transação Mínima (Foco em Vendas)
+
+> **Pergunta:** Quais dados mínimos são necessários para validar e registrar uma transação no sistema, mesmo que o cliente não se identifique?
+> **Resposta:** **O registro da venda é obrigatório.** Exigimos **Data, Hora, Valor Total, a Loja onde ocorreu e o Colaborador** responsável. O **Cliente é opcional** (pode ser NULL).
+
+> **Pergunta:** Como o sistema lida com vendas que contêm vários produtos? E se o preço mudar?
+> **Resposta:** É um relacionamento **Muitos para Muitos (N:N)**. Precisamos que o sistema capture o **preço unitário histórico** (o preço exato no momento da compra) e a quantidade de cada item vendido.
+
+> **Pergunta:** É possível que o cliente divida o valor da venda usando, por exemplo, Pix e Cartão na mesma transação?
+> **Resposta:** **Sim.** A venda pode ser dividida em múltiplas formas. Para cada parte, registramos o tipo, o valor pago e o detalhe da transação.
+
+#### 2. Cadastro e Integridade de Dados (Identificação e Estrutura)
+
+> **Pergunta:** Identificação do Cliente: Qual é o campo de identificação único do cliente? Ele pode ter mais de um telefone ou endereço?
+> **Resposta:** O **CPF é o único identificador**. E sim, um cliente pode ter **vários endereços, telefones e e-mails**.
+
+> **Pergunta:** Um colaborador pode trabalhar em mais de uma unidade de loja ao mesmo tempo ou ele está fixo em uma só?
+> **Resposta:** O colaborador está sempre **fixo em uma única Loja**.
+
+> **Pergunta:** Identificação do Fornecedor: Qual é o identificador principal e único do fornecedor?
+> **Resposta:** O **CNPJ** é o identificador legal e deve ser **único** no sistema.
+
+> **Pergunta:** As lojas e os fornecedores seguem a mesma regra dos clientes, podendo ter múltiplos endereços registrados?
+> **Resposta:** **Sim**, tanto as Lojas quanto os Fornecedores podem ter múltiplos endereços (logística, faturamento, etc.).
+
+> **Pergunta:** Qual é o principal código de rastreamento do produto? Que outros dados de estoque são críticos?
+> **Resposta:** O **Código de Barras** é o identificador único. É vital rastrear o **Estoque Atual** e a **Unidade de Medida** ($\text{Kg}$, $\text{Und}$, etc.).
+
+#### 3. Logística e Fidelização (Relacionamentos N:N Complexos)
+
+> **Pergunta:** Qual o tipo de relacionamento entre um Cliente e um Programa de Fidelidade? Quais dados precisamos saber sobre essa adesão?
+> **Resposta:** É **Muitos para Muitos (N:N)**. Precisamos da **data de adesão** e do **saldo de pontos**.
+
+> **Pergunta:** Um produto pode ser comprado de diferentes fornecedores? E o custo e o prazo são sempre os mesmos?
+> **Resposta:** É **N:N**. Não. O **preço de custo** e o **prazo de entrega** são **específicos de cada combinação** Produto-Fornecedor e devem ser registrados.
+
+---
 
 ## 🛠️ Decisões Chave de Modelagem
 
