@@ -107,8 +107,6 @@ A arquitetura do banco de dados permite que a equipe de marketing realize consul
 
 ## 🇬🇧 English Version
 
-```markdown
-# modelagem_dados_ciclo_vendas_supermercado_sql
 # 🛒 Data Modeling Project: Sales Cycle and Loyalty System
 
 ## 🎯 Objective
@@ -183,7 +181,7 @@ The logical model was built prioritizing data integrity and performance in BI (B
 | **Identifiers (CPF/CNPJ)** | Use of data type **`CHAR(11)`** for CPF and **`CHAR(14)`** for CNPJ. | Ensures fixed length for optimized search and indexing performance, standardizing data entry. |
 | **Monetary Values** | Use of data type **`DECIMAL(10,2)`** (not `FLOAT`). | Essential for ensuring **fiscal precision** and avoiding rounding errors inherent in floating point, crucial for financial transactions. |
 | **Auditing and Time** | `venda_data_hora` field with **`DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP`**. | Ensures the date and time record is automatically made by the DBMS upon insertion, guaranteeing traceability and temporal integrity of the sale. |
-| **M:N Relationship** | Creation of the **`tbl_item_venda`** table with a **Composite Primary Key** (`id_venda`, `id_produto`). | Resolves the N:N relationship (one Sale has many Products; one Product is in many Sales), allowing the tracking of the price and quantity of each item on the invoice. |
+| **M:N Relationship** | Creation of the **`tbl_item_venda`** table with a **Composite Primary Key** (`id_venda`, `id_produto`). | Resolves the N:N relationship, allowing the tracking of the price and quantity of each item on the invoice. |
 
 ## 📂 Main Table Structure
 
