@@ -106,6 +106,7 @@ A arquitetura do banco de dados permite que a equipe de marketing realize consul
 ## ⚖️ Licença
 
 Este projeto está sob a licença **MIT**. Consulte o arquivo [LICENSE](LICENSE) para obter mais detalhes.
+
 ---
 ---
 
