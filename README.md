@@ -102,6 +102,10 @@ A arquitetura do banco de dados permite que a equipe de marketing realize consul
 * [`modelo_logico_ciclo_vendas_supermercado.png`](modelo_logico_ciclo_vendas_supermercado.png): Diagrama do Modelo Lógico com chaves e tipos de dados.
 
 ---
+
+## ⚖️ Licença
+
+Este projeto está sob a licença **MIT**. Consulte o arquivo [LICENSE](LICENSE) para obter mais detalhes.
 ---
 ---
 
@@ -208,3 +212,9 @@ The database architecture allows the marketing team to perform strategic queries
 * [`ciclo_vendas_supermercado.sql`](ciclo_vendas_supermercado.sql): Complete script for database creation.
 * [`modelo_conceitual-supermercado1.png`](modelo_conceitual-supermercado1.png): Conceptual Model Diagram.
 * [`modelo_logico_ciclo_vendas_supermercado.png`](modelo_logico_ciclo_vendas_supermercado.png): Logical Model Diagram with keys and data types.
+
+---
+
+## ⚖️ License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for more details.
