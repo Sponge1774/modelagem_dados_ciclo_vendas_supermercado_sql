@@ -1,221 +1,957 @@
-# modelagem_dados_ciclo_vendas_supermercado_sql
-# 🛒 Projeto de Modelagem de Dados: Sistema de Vendas e Fidelização
+# 🛒 Modelagem de Dados — Sistema de Vendas e Fidelização
+
+![SQL](https://img.shields.io/badge/SQL-Database-4479A1)
+![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1)
+![Data Modeling](https://img.shields.io/badge/Data%20Modeling-Relational-6A5ACD)
+![Status](https://img.shields.io/badge/Status-Acadêmico%20%7C%20Em%20desenvolvimento-informational)
+
+Projeto de **modelagem de banco de dados relacional** desenvolvido para representar o ciclo de vendas de um supermercado, contemplando **clientes, lojas, produtos, fornecedores, colaboradores, vendas, pagamentos, estoque e fidelização**.
+
+O projeto foi desenvolvido com foco em **integridade referencial, normalização, rastreabilidade das transações e preparação dos dados para análises futuras de Business Intelligence (BI)**.
+
+---
 
 ## 🎯 Objetivo
-Este projeto consiste na modelagem de um banco de dados relacional desenhado para suportar o ciclo de vendas completo de um supermercado, com um foco estratégico na **rastreabilidade das transações** e na **fidelização de clientes**.
 
-A solução visa transformar os dados transacionais em insumos analíticos prontos para o programa de recompensas e ações de marketing do cliente.
+Projetar uma estrutura de banco de dados capaz de representar, de forma consistente, as principais operações de um supermercado:
 
-## 💡 O Diagnóstico do Problema
+* Cadastro de clientes;
+* Cadastro de lojas;
+* Cadastro de fornecedores;
+* Cadastro de produtos;
+* Controle de estoque;
+* Registro de colaboradores;
+* Registro de vendas;
+* Detalhamento dos itens vendidos;
+* Registro de pagamentos;
+* Relacionamento entre produtos e fornecedores;
+* Programa de fidelidade;
+* Cadastro de múltiplos telefones, e-mails e endereços;
+* Rastreabilidade de data e hora das vendas.
 
-O diagnóstico inicial identificou a necessidade de estruturar a base de dados para resolver dois problemas principais:
-1.  **Falta de Rastreabilidade:** Inconsistência nos registros de vendas que dificultava a auditoria fiscal e a exatidão dos dados de estoque.
-2.  **Impossibilidade de Análise de Fidelização:** Não existia uma conexão clara entre as vendas e os clientes cadastrados, impedindo a contagem de pontos e a segmentação para campanhas de fidelidade.
-
-## 📋 Levantamento de Requisitos
-
-O projeto foi guiado pelos seguintes requisitos de negócio:
-* **Cadastro Completo:** Registro de clientes, produtos, colaboradores e fornecedores com endereço padronizado.
-* **Venda Segura:** Registro de cada transação com data/hora exata e vinculação a um colaborador.
-* **Detalhamento Fiscal:** Armazenamento do preço unitário e quantidade de cada item vendido (relação N:N entre Vendas e Produtos).
-* **Mecanismo de Pontuação:** Capacidade de rastrear pontos e histórico de fidelidade de cada cliente.
-
----
-
-### Mapeamento Detalhado: Perguntas de Negócio para Solução Técnica
-
-Esta seção detalha como as perguntas de levantamento de requisitos foram traduzidas em decisões estruturais no modelo físico.
-
-#### 1. Rastreabilidade e Transação Mínima (Foco em Vendas)
-
-> **Pergunta:** Quais dados mínimos são necessários para validar e registrar uma transação no sistema, mesmo que o cliente não se identifique?
-> **Resposta:** **O registro da venda é obrigatório.** Exigimos **Data, Hora, Valor Total, a Loja onde ocorreu e o Colaborador** responsável. O **Cliente é opcional** (pode ser NULL).
-
-> **Pergunta:** Como o sistema lida com vendas que contêm vários produtos? E se o preço mudar?
-> **Resposta:** É um relacionamento **Muitos para Muitos (N:N)**. Precisamos que o sistema capture o **preço unitário histórico** (o preço exato no momento da compra) e a quantidade de cada item vendido.
-
-> **Pergunta:** É possível que o cliente divida o valor da venda usando, por exemplo, Pix e Cartão na mesma transação?
-> **Resposta:** **Sim.** A venda pode ser dividida em múltiplas formas. Para cada parte, registramos o tipo, o valor pago e o detalhe da transação.
-
-#### 2. Cadastro e Integridade de Dados (Identificação e Estrutura)
-
-> **Pergunta:** Identificação do Cliente: Qual é o campo de identificação único do cliente? Ele pode ter mais de um telefone ou endereço?
-> **Resposta:** O **CPF é o único identificador**. E sim, um cliente pode ter **vários endereços, telefones e e-mails**.
-
-> **Pergunta:** Um colaborador pode trabalhar em mais de uma unidade de loja ao mesmo tempo ou ele está fixo em uma só?
-> **Resposta:** O colaborador está sempre **fixo em uma única Loja**.
-
-> **Pergunta:** Identificação do Fornecedor: Qual é o identificador principal e único do fornecedor?
-> **Resposta:** O **CNPJ** é o identificador legal e deve ser **único** no sistema.
-
-> **Pergunta:** As lojas e os fornecedores seguem a mesma regra dos clientes, podendo ter múltiplos endereços registrados?
-> **Resposta:** **Sim**, tanto as Lojas quanto os Fornecedores podem ter múltiplos endereços (logística, faturamento, etc.).
-
-> **Pergunta:** Qual é o principal código de rastreamento do produto? Que outros dados de estoque são críticos?
-> **Resposta:** O **Código de Barras** é o identificador único. É vital rastrear o **Estoque Atual** e a **Unidade de Medida** ($\text{Kg}$, $\text{Und}$, etc.).
-
-#### 3. Logística e Fidelização (Relacionamentos N:N Complexos)
-
-> **Pergunta:** Qual o tipo de relacionamento entre um Cliente e um Programa de Fidelidade? Quais dados precisamos saber sobre essa adesão?
-> **Resposta:** É **Muitos para Muitos (N:N)**. Precisamos da **data de adesão** e do **saldo de pontos**.
-
-> **Pergunta:** Um produto pode ser comprado de diferentes fornecedores? E o custo e o prazo são sempre os mesmos?
-> **Resposta:** É **N:N**. Não. O **preço de custo** e o **prazo de entrega** são **específicos de cada combinação** Produto-Fornecedor e devem ser registrados.
+A modelagem procura separar adequadamente **entidades, atributos e relacionamentos**, reduzindo redundâncias e mantendo a consistência dos dados.
 
 ---
 
-## 🛠️ Decisões Chave de Modelagem
+# 💡 Problema de negócio
 
-O modelo lógico foi construído priorizando a integridade dos dados e o desempenho em consultas de BI (Business Intelligence).
+Um sistema de vendas precisa registrar muito mais do que apenas o valor total de uma compra.
 
-| Tópico | Decisão Implementada | Justificativa |
-| :--- | :--- | :--- |
-| **Identificadores (CPF/CNPJ)** | Uso do tipo de dado **`CHAR(11)`** para CPF e **`CHAR(14)`** para CNPJ. | Garante tamanho fixo para otimizar o desempenho em buscas e índices, padronizando a entrada de dados. |
-| **Valores Monetários** | Uso do tipo de dado **`DECIMAL(10,2)`** (e não `FLOAT`). | Essencial para garantir a **precisão fiscal** e evitar erros de arredondamento inerentes ao ponto flutuante, crucial para transações financeiras. |
-| **Auditoria e Tempo** | Campo `venda_data_hora` com **`DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP`**. | Assegura que o registro de data e hora seja feito de forma automática pelo SGBD no momento da inserção, garantindo a rastreabilidade e integridade temporal da venda. |
-| **Relacionamento M:N** | Criação da tabela **`tbl_item_venda`** com uma **Chave Primária Composta** (`id_venda`, `id_produto`). | Resolve a relação N:N (uma Venda tem muitos Produtos; um Produto está em muitas Vendas), permitindo rastrear o preço e a quantidade de cada item na nota fiscal. |
+É necessário saber:
 
-## 📂 Estrutura das Tabelas Principais
+* Quem realizou a venda?
+* Em qual loja ela ocorreu?
+* Qual cliente foi identificado?
+* Quais produtos foram vendidos?
+* Qual era o preço de cada produto no momento da venda?
+* Qual foi a quantidade vendida?
+* Qual desconto foi aplicado?
+* Como a venda foi paga?
+* Qual fornecedor fornece determinado produto?
+* Qual é o estoque atual?
+* O cliente participa de um programa de fidelidade?
+* Quantos pontos possui?
 
-O modelo é ancorado nas seguintes tabelas, que suportam o ciclo de vendas e fidelização:
-
-| Tabela | Função | Destaque |
-| :--- | :--- | :--- |
-| **`tbl_vendas`** | Registro mestre de cada transação. | Possui `venda_data_hora` (para auditoria) e Chaves Estrangeiras para `tbl_colaborador` e `tbl_cliente`. |
-| **`tbl_item_venda`** | Detalhe de cada item vendido. | Contém a Chave Composta e o `preco_unitario` no momento da venda (garantindo o histórico do preço). |
-| **`tbl_cliente`** | Cadastro principal dos consumidores. | Informações cruciais para o programa de fidelidade. |
-| **`tbl_cadastro_fidelidade`** | Gerencia os pontos e benefícios. | Tabela dedicada a armazenar `pontos_atuais` e ligar o cliente ao seu status no programa. |
-
-## 🚀 Valor para o Negócio (Fidelização)
-
-A arquitetura do banco de dados permite que a equipe de marketing realize consultas estratégicas, como:
-
-* **Identificação de Clientes $\text{RFM}$:** Quais clientes com alto valor de fidelidade (`tbl_cadastro_fidelidade`) não fazem compras recentes.
-* **Estratégias de Retenção:** Quais produtos devem ser oferecidos com desconto para um cliente específico com base em seu histórico de compras (`tbl_item_venda`).
+A modelagem foi construída para permitir que essas informações sejam armazenadas de maneira estruturada e relacionadas por meio de **chaves primárias e estrangeiras**.
 
 ---
 
-### 📁 Arquivos do Repositório
+# 🏗️ Arquitetura do modelo
 
-* [`ciclo_vendas_supermercado.sql`](ciclo_vendas_supermercado.sql): Script completo para criação do banco de dados.
-* [`modelo_conceitual-supermercado1.png`](modelo_conceitual-supermercado1.png): Diagrama do Modelo Conceitual.
-* [`modelo_logico_ciclo_vendas_supermercado.png`](modelo_logico_ciclo_vendas_supermercado.png): Diagrama do Modelo Lógico com chaves e tipos de dados.
+O banco de dados é organizado em grupos de entidades:
+
+```text
+                    ┌──────────────────┐
+                    │    CLIENTES      │
+                    └────────┬─────────┘
+                             │
+                             │
+                    ┌────────▼─────────┐
+                    │     VENDAS       │
+                    └──────┬─┬─────────┘
+                           │ │
+             ┌─────────────┘ └──────────────┐
+             │                              │
+      ┌──────▼──────┐                ┌──────▼──────────┐
+      │ ITENS VENDA │                │    PAGAMENTO    │
+      └──────┬──────┘                └─────────────────┘
+             │
+             │
+      ┌──────▼──────┐
+      │  PRODUTOS   │
+      └──────┬──────┘
+             │
+             │
+      ┌──────▼─────────────┐
+      │ FORNECEDOR_PRODUTO │
+      └──────────┬─────────┘
+                 │
+          ┌──────▼───────┐
+          │ FORNECEDORES │
+          └──────────────┘
+
+
+      ┌──────────────┐
+      │    LOJAS     │
+      └──────┬───────┘
+             │
+      ┌──────▼────────────┐
+      │  COLABORADORES    │
+      └───────────────────┘
+
+
+      ┌───────────────────────┐
+      │ PROGRAMA FIDELIDADE   │
+      └───────────┬───────────┘
+                  │
+          ┌───────▼──────────────┐
+          │ CADASTRO_FIDELIDADE  │
+          └───────────┬──────────┘
+                      │
+                  CLIENTES
+```
 
 ---
 
-## ⚖️ Licença
+# 🧩 Principais entidades
 
-Este projeto está sob a licença **MIT**. Consulte o arquivo [LICENSE](LICENSE) para obter mais detalhes.
+| Tabela                      | Responsabilidade                         |
+| --------------------------- | ---------------------------------------- |
+| `tbl_clientes`              | Cadastro dos clientes                    |
+| `tbl_lojas`                 | Cadastro das unidades do supermercado    |
+| `tbl_fornecedores`          | Cadastro dos fornecedores                |
+| `tbl_produtos`              | Cadastro e informações dos produtos      |
+| `tbl_colaboradores`         | Cadastro dos colaboradores               |
+| `tbl_vendas`                | Registro das vendas                      |
+| `tbl_item_venda`            | Detalhamento dos produtos vendidos       |
+| `tbl_forma_pagamento`       | Formas e valores de pagamento            |
+| `tbl_programa_fidelidade`   | Cadastro dos programas de fidelidade     |
+| `tbl_cadastro_fidelidade`   | Associação entre clientes e programas    |
+| `tbl_fornecedores_produtos` | Associação entre fornecedores e produtos |
+| `tbl_clientes_telefone`     | Telefones dos clientes                   |
+| `tbl_clientes_email`        | E-mails dos clientes                     |
+| `tbl_clientes_endereco`     | Endereços dos clientes                   |
+| `tbl_lojas_endereco`        | Endereços das lojas                      |
+| `tbl_fornecedores_endereco` | Endereços dos fornecedores               |
 
 ---
+
+# 🔗 Relacionamentos
+
+O modelo utiliza diferentes tipos de relacionamento.
+
+### Cliente → Venda
+
+Um cliente pode possuir várias vendas.
+
+```text
+CLIENTE 1 ─────────── N VENDA
+```
+
+O cliente em uma venda é **opcional**, permitindo registrar vendas em que o consumidor não foi identificado.
+
 ---
 
-## 🇬🇧 English Version
+### Venda → Item da venda
 
-# 🛒 Data Modeling Project: Sales Cycle and Loyalty System
+Uma venda pode possuir vários itens.
+
+```text
+VENDA 1 ─────────── N ITEM_VENDA
+```
+
+A tabela `tbl_item_venda` funciona como entidade associativa entre vendas e produtos.
+
+---
+
+### Produto → Item da venda
+
+Um produto pode aparecer em várias vendas.
+
+```text
+PRODUTO 1 ─────────── N ITEM_VENDA
+```
+
+A combinação:
+
+```text
+id_venda + id_produto
+```
+
+forma uma **chave primária composta**.
+
+---
+
+### Fornecedor ↔ Produto
+
+Um fornecedor pode fornecer diversos produtos e um produto pode ser fornecido por diferentes fornecedores.
+
+```text
+FORNECEDOR N ─── N PRODUTO
+```
+
+O relacionamento é resolvido pela tabela:
+
+```text
+tbl_fornecedores_produtos
+```
+
+Ela armazena informações específicas da relação, como:
+
+* Preço de custo;
+* Prazo de entrega;
+* Código do produto no fornecedor;
+* Data da última compra.
+
+---
+
+### Cliente ↔ Programa de Fidelidade
+
+O relacionamento entre clientes e programas também é tratado por uma entidade associativa:
+
+```text
+CLIENTE N ─── N PROGRAMA_FIDELIDADE
+```
+
+A tabela:
+
+```text
+tbl_cadastro_fidelidade
+```
+
+armazena:
+
+* Data de adesão;
+* Pontos atuais;
+* Cliente;
+* Programa de fidelidade.
+
+---
+
+# 🔐 Integridade e regras de modelagem
+
+O projeto utiliza mecanismos do SGBD para preservar a consistência dos dados.
+
+## Chaves primárias
+
+As entidades principais utilizam identificadores numéricos com `AUTO_INCREMENT`.
+
+Exemplo:
+
+```sql
+id_cliente INT NOT NULL AUTO_INCREMENT
+```
+
+---
+
+## Chaves estrangeiras
+
+Os relacionamentos são implementados utilizando `FOREIGN KEY`.
+
+Exemplo:
+
+```sql
+CONSTRAINT fk_vendas_clientes
+FOREIGN KEY (id_cliente)
+REFERENCES tbl_clientes (id_cliente)
+```
+
+Isso permite manter a integridade referencial entre as tabelas.
+
+---
+
+## Chaves compostas
+
+O projeto utiliza chaves primárias compostas em relacionamentos N:N.
+
+### Itens da venda
+
+```sql
+PRIMARY KEY (id_venda, id_produto)
+```
+
+### Fidelidade
+
+```sql
+PRIMARY KEY (id_cliente, id_programa_fidelidade)
+```
+
+### Fornecedor × Produto
+
+```sql
+PRIMARY KEY (id_fornecedor, id_produto)
+```
+
+Essas estruturas permitem representar relacionamentos muitos-para-muitos sem criar duplicidade na associação.
+
+---
+
+# 💰 Tratamento de valores monetários
+
+Para valores financeiros, o projeto utiliza:
+
+```sql
+DECIMAL(10,2)
+```
+
+em vez de tipos de ponto flutuante.
+
+Isso é adequado para valores monetários porque permite representar os valores com precisão decimal controlada.
+
+Exemplos presentes no modelo:
+
+```text
+produto_preco_venda
+venda_valor_total
+venda_desconto
+item_venda_preco_unitario
+item_venda_subtotal
+item_venda_desconto
+item_venda_valor_liquido
+fornecedor_produto_preco_custo
+forma_pagamento_valor_pago
+```
+
+---
+
+# 🕒 Rastreabilidade das vendas
+
+A tabela `tbl_vendas` possui:
+
+```sql
+venda_data_hora DATETIME
+NOT NULL
+DEFAULT CURRENT_TIMESTAMP
+```
+
+Dessa forma, a data e a hora da criação do registro podem ser atribuídas automaticamente pelo SGBD.
+
+A venda também está relacionada a:
+
+* Cliente, quando identificado;
+* Loja;
+* Colaborador.
+
+Isso cria uma estrutura adequada para rastreamento das transações.
+
+---
+
+# 🧾 Detalhamento da venda
+
+A tabela `tbl_item_venda` registra informações específicas de cada produto dentro de uma venda:
+
+```text
+Quantidade
+Preço unitário
+Subtotal
+Desconto
+Valor líquido
+```
+
+Um ponto importante da modelagem é o armazenamento do:
+
+```text
+item_venda_preco_unitario
+```
+
+Isso permite preservar o preço praticado no momento da venda, independentemente de alterações posteriores no preço cadastrado do produto.
+
+---
+
+# 💳 Pagamentos
+
+A tabela:
+
+```text
+tbl_forma_pagamento
+```
+
+permite associar múltiplos registros de pagamento a uma mesma venda.
+
+Ela armazena:
+
+* Tipo de pagamento;
+* Valor pago;
+* Detalhe da transação;
+* Venda relacionada.
+
+Isso permite representar situações em que uma venda utiliza mais de uma forma de pagamento.
+
+---
+
+# 📦 Produtos e fornecedores
+
+A relação entre produtos e fornecedores é representada por:
+
+```text
+tbl_fornecedores_produtos
+```
+
+Além das chaves de relacionamento, a tabela possui atributos próprios da associação:
+
+```text
+fornecedor_produto_preco_custo
+fornecedor_produto_prazo_entrega
+fornecedor_produto_codigo_fornecedor
+fornecedor_produto_data_ultima_compra
+```
+
+Essa abordagem evita colocar informações que pertencem à relação diretamente em `tbl_produtos` ou `tbl_fornecedores`.
+
+---
+
+# 👤 Cadastro de clientes
+
+O cliente possui informações básicas em:
+
+```text
+tbl_clientes
+```
+
+e informações complementares em tabelas específicas.
+
+### Telefones
+
+```text
+tbl_clientes_telefone
+```
+
+### E-mails
+
+```text
+tbl_clientes_email
+```
+
+### Endereços
+
+```text
+tbl_clientes_endereco
+```
+
+Essa separação permite que um cliente possua múltiplos registros de contato e endereço sem duplicar os dados principais do cadastro.
+
+---
+
+# 📊 Aplicações para análise de dados
+
+A estrutura criada permite futuras consultas analíticas, por exemplo:
+
+### Análise de vendas
+
+* Faturamento por período;
+* Faturamento por loja;
+* Produtos mais vendidos;
+* Ticket médio;
+* Volume de vendas;
+* Descontos aplicados.
+
+### Análise de clientes
+
+* Frequência de compras;
+* Valor total comprado;
+* Produtos preferidos;
+* Clientes ativos e inativos;
+* Segmentação de clientes.
+
+### Fidelização
+
+* Pontos acumulados;
+* Adesão aos programas;
+* Histórico de compras;
+* Identificação de clientes com baixa frequência.
+
+### Fornecedores
+
+* Produtos fornecidos;
+* Preço de custo;
+* Prazo de entrega;
+* Histórico de compras.
+
+Essas possibilidades tornam o modelo uma base interessante para futuras soluções de **Data Analytics e Business Intelligence**.
+
+---
+
+# 🛠️ Tecnologias e conceitos
+
+### Banco de dados
+
+* MySQL
+* SQL
+* Banco de dados relacional
+* DDL
+* Chaves primárias
+* Chaves estrangeiras
+* Chaves compostas
+* Constraints
+* Integridade referencial
+* `AUTO_INCREMENT`
+* `DECIMAL`
+* `DATETIME`
+
+### Modelagem
+
+* Entidades
+* Atributos
+* Relacionamentos
+* Cardinalidade
+* Relacionamentos 1:N
+* Relacionamentos N:N
+* Entidades associativas
+* Normalização
+* Integridade de dados
+
+### Análise
+
+* Levantamento de requisitos
+* Regras de negócio
+* Rastreabilidade
+* Preparação para BI
+* Análise de dados
+
+---
+
+# ▶️ Como executar
+
+## 1. Pré-requisito
+
+Tenha um servidor **MySQL** instalado ou disponível por meio de uma ferramenta compatível, como MySQL Workbench.
+
+## 2. Clone o repositório
+
+```bash
+git clone https://github.com/Sponge1774/modelagem_dados_ciclo_vendas_supermercado_sql.git
+```
+
+## 3. Entre no diretório
+
+```bash
+cd modelagem_dados_ciclo_vendas_supermercado_sql
+```
+
+## 4. Execute o script
+
+Abra:
+
+```text
+ciclo_vendas_supermercado.sql
+```
+
+e execute o script no MySQL.
+
+O script cria o banco:
+
+```text
+ciclo_vendas_supermercado
+```
+
+> ⚠️ **Atenção:** o script contém `DROP DATABASE IF EXISTS`. Portanto, sua execução remove uma base existente com o mesmo nome antes de recriá-la. Utilize essa instrução somente em ambiente de desenvolvimento, estudo ou laboratório.
+
+---
+
+# 📁 Arquivos do projeto
+
+* [`ciclo_vendas_supermercado.sql`](ciclo_vendas_supermercado.sql) — Script SQL para criação do banco e suas tabelas.
+* [`modelo_conceitual-supermercado1.png`](modelo_conceitual-supermercado1.png) — Modelo conceitual.
+* [`modelo_logico_ciclo_vendas_supermercado.png`](modelo_logico_ciclo_vendas_supermercado.png) — Modelo lógico.
+* [`LICENSE`](LICENSE) — Licença do projeto.
+
+---
+
+# 🎓 Contexto acadêmico
+
+Projeto desenvolvido como parte da formação em **Análise e Desenvolvimento de Sistemas**, com aplicação prática de conceitos de:
+
+* Banco de dados;
+* Modelagem de dados;
+* SQL;
+* Engenharia de requisitos;
+* Integridade referencial;
+* Relacionamentos entre entidades;
+* Organização de informações para análise.
+
+---
+
+# 🚧 Próximas melhorias
+
+Possíveis evoluções para o projeto:
+
+* [ ] Criar script de `INSERT` com dados fictícios;
+* [ ] Criar consultas SQL analíticas;
+* [ ] Criar `VIEWs` para relatórios;
+* [ ] Criar consultas de análise de vendas;
+* [ ] Implementar consultas de análise RFM;
+* [ ] Criar procedures;
+* [ ] Criar triggers para regras de negócio;
+* [ ] Adicionar testes de integridade;
+* [ ] Criar dashboard de BI;
+* [ ] Documentar o modelo físico;
+* [ ] Adicionar exemplos de consultas SQL;
+* [ ] Melhorar validações de dados.
+
+---
+
+# 📌 Status
+
+**Projeto acadêmico — em desenvolvimento contínuo.**
+
+O modelo atual representa uma base relacional estruturada para o ciclo de vendas e fidelização, podendo ser expandido para incorporar novas regras de negócio e análises.
+
+---
+
+# ⚖️ Licença
+
+Este projeto está sob a licença **MIT**.
+
+Consulte o arquivo [`LICENSE`](LICENSE) para obter mais informações.
+
+---
+
+# 🇬🇧 English Version
+
+# 🛒 Data Modeling — Sales and Customer Loyalty System
+
+![SQL](https://img.shields.io/badge/SQL-Database-4479A1)
+![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1)
+![Data Modeling](https://img.shields.io/badge/Data%20Modeling-Relational-6A5ACD)
+![Status](https://img.shields.io/badge/Status-Academic%20%7C%20In%20Development-informational)
+
+Relational database modeling project designed to represent the sales cycle of a supermarket, including **customers, stores, products, suppliers, employees, sales, payments, inventory, and customer loyalty**.
+
+The project focuses on **referential integrity, data modeling, transaction traceability, and future Business Intelligence (BI) analysis**.
+
+---
 
 ## 🎯 Objective
-This project consists of modeling a relational database designed to support the complete sales cycle of a supermarket, with a strategic focus on **transaction traceability** and **customer loyalty**.
 
-The solution aims to transform transactional data into analytical inputs ready for the customer loyalty program and marketing actions.
+The goal is to design a relational database capable of representing the main operations of a supermarket:
 
-## 💡 The Problem Diagnosis
-
-The initial diagnosis identified the need to structure the database to solve two main problems:
-1.  **Lack of Traceability:** Inconsistency in sales records hindering tax auditing and inventory data accuracy.
-2.  **Inability to Perform Loyalty Analysis:** No clear connection existed between sales and registered customers, preventing point calculation and segmentation for loyalty campaigns.
-
-## 📋 Requirements Gathering
-
-The project was guided by the following business requirements:
-* **Complete Registration:** Recording of customers, products, employees, and suppliers with standardized addresses.
-* **Secure Sale:** Recording of each transaction with exact date/time and link to an employee.
-* **Fiscal Detailing:** Storage of the unit price and quantity of each item sold (N:N relationship between Sales and Products).
-* **Scoring Mechanism:** Ability to track points and loyalty history for each customer.
-
----
-
-### Detailed Mapping: Business Questions to Technical Solution
-
-This section details how the requirements gathering questions were translated into structural decisions in the physical model.
-
-#### 1. Traceability and Minimum Transaction (Sales Focus)
-
-> **Question:** What minimum data is required to validate and register a transaction in the system, even if the customer is not identified?
-> **Answer:** **Sale registration is mandatory.** We require **Date, Time, Total Value, the Store where it occurred, and the responsible Employee**. The **Customer is optional** (can be NULL).
-
-> **Question:** How does the system handle sales containing multiple products? And what if the price changes?
-> **Answer:** It is a **Many-to-Many (N:N)** relationship. We need the system to capture the **historical unit price** (the exact price at the time of purchase) and the quantity of each item sold.
-
-> **Question:** Is it possible for the customer to split the payment amount using, for example, Pix and Card in the same transaction?
-> **Answer:** **Yes.** The sale can be split into multiple forms. For each part, we record the type, the value paid, and the transaction detail.
-
-#### 2. Registration and Data Integrity (Identification and Structure)
-
-> **Question:** Customer Identification: What is the unique identifier field for the customer? Can they have more than one phone number or address?
-> **Answer:** The **CPF is the only identifier**. And yes, a customer can have **multiple addresses, phone numbers, and emails**.
-
-> **Question:** Can an employee work at more than one store unit at the same time, or are they fixed to only one?
-> **Answer:** The employee is always **fixed to a single Store**.
-
-> **Question:** Supplier Identification: What is the main and unique identifier for the supplier?
-> **Answer:** The **CNPJ** is the legal identifier and must be **unique** in the system.
-
-> **Question:** Do stores and suppliers follow the same rule as customers, being able to have multiple registered addresses?
-> **Answer:** **Yes**, both Stores and Suppliers can have multiple addresses (logistics, billing, etc.).
-
-> **Question:** What is the main tracking code for the product? What other inventory data is critical?
-> **Answer:** The **Barcode** is the unique identifier. It is vital to track the **Current Stock** and the **Unit of Measurement** ($\text{Kg}$, $\text{Unit}$, etc.).
-
-#### 3. Logistics and Loyalty (Complex N:N Relationships)
-
-> **Question:** What is the relationship type between a Customer and a Loyalty Program? What data do we need to know about this enrollment?
-> **Answer:** It is **Many-to-Many (N:N)**. We need the **enrollment date** and the **current point balance**.
-
-> **Question:** Can a product be bought from different suppliers? And are the cost and delivery time always the same?
-> **Answer:** It is **N:N**. No. The **cost price** and **delivery time** are **specific to each Product-Supplier combination** and must be recorded.
+* Customer registration;
+* Store registration;
+* Supplier registration;
+* Product registration;
+* Inventory control;
+* Employee registration;
+* Sales registration;
+* Sales item details;
+* Payment records;
+* Product-supplier relationships;
+* Loyalty programs;
+* Multiple customer phones, e-mails, and addresses;
+* Sales date and time traceability.
 
 ---
 
-## 🛠️ Key Modeling Decisions
+# 🏗️ Model Architecture
 
-The logical model was built prioritizing data integrity and performance in BI (Business Intelligence) queries.
+The database is organized into groups of related entities:
 
-| Topic | Implemented Decision | Justification |
-| :--- | :--- | :--- |
-| **Identifiers (CPF/CNPJ)** | Use of data type **`CHAR(11)`** for CPF and **`CHAR(14)`** for CNPJ. | Ensures fixed length for optimized search and indexing performance, standardizing data entry. |
-| **Monetary Values** | Use of data type **`DECIMAL(10,2)`** (not `FLOAT`). | Essential for ensuring **fiscal precision** and avoiding rounding errors inherent in floating point, crucial for financial transactions. |
-| **Auditing and Time** | `venda_data_hora` field with **`DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP`**. | Ensures the date and time record is automatically made by the DBMS upon insertion, guaranteeing traceability and temporal integrity of the sale. |
-| **M:N Relationship** | Creation of the **`tbl_item_venda`** table with a **Composite Primary Key** (`id_venda`, `id_produto`). | Resolves the N:N relationship, allowing the tracking of the price and quantity of each item on the invoice. |
+```text
+CUSTOMERS
+    │
+    ▼
+  SALES
+   │ │
+   │ └──────────────► PAYMENTS
+   │
+   ▼
+SALE_ITEMS
+   │
+   ▼
+PRODUCTS
+   │
+   ▼
+SUPPLIER_PRODUCTS
+   │
+   ▼
+SUPPLIERS
+```
 
-## 📂 Main Table Structure
-
-The model is anchored by the following tables, which support the sales and loyalty cycle:
-
-| Table | Function | Highlight |
-| :--- | :--- | :--- |
-| **`tbl_vendas`** | Master record for each transaction. | Contains `venda_data_hora` (for auditing) and Foreign Keys to `tbl_colaborador` and `tbl_cliente`. |
-| **`tbl_item_venda`** | Detail of each item sold. | Contains the Composite Key and the `preco_unitario` at the time of sale (ensuring price history). |
-| **`tbl_cliente`** | Main consumer registration. | Crucial information for the loyalty program. |
-| **`tbl_cadastro_fidelidade`** | Manages points and benefits. | Dedicated table for storing `pontos_atuais` and linking the customer to their program status. |
-
-## 🚀 Business Value (Loyalty)
-
-The database architecture allows the marketing team to perform strategic queries, such as:
-
-* **RFM Customer Identification:** Which high-loyalty customers (`tbl_cadastro_fidelidade`) have not made recent purchases.
-* **Retention Strategies:** Which products should be offered at a discount to a specific customer based on their purchase history (`tbl_item_venda`).
+Additional structures support stores, employees, customer contacts, addresses, and loyalty programs.
 
 ---
 
-### 📁 Repository Files
+# 🧩 Main Entities
 
-* [`ciclo_vendas_supermercado.sql`](ciclo_vendas_supermercado.sql): Complete script for database creation.
-* [`modelo_conceitual-supermercado1.png`](modelo_conceitual-supermercado1.png): Conceptual Model Diagram.
-* [`modelo_logico_ciclo_vendas_supermercado.png`](modelo_logico_ciclo_vendas_supermercado.png): Logical Model Diagram with keys and data types.
+| Table                       | Responsibility                                 |
+| --------------------------- | ---------------------------------------------- |
+| `tbl_clientes`              | Customer registration                          |
+| `tbl_lojas`                 | Store registration                             |
+| `tbl_fornecedores`          | Supplier registration                          |
+| `tbl_produtos`              | Product registration and inventory information |
+| `tbl_colaboradores`         | Employee registration                          |
+| `tbl_vendas`                | Sales registration                             |
+| `tbl_item_venda`            | Details of products sold                       |
+| `tbl_forma_pagamento`       | Payment records                                |
+| `tbl_programa_fidelidade`   | Loyalty program registration                   |
+| `tbl_cadastro_fidelidade`   | Customer-loyalty program association           |
+| `tbl_fornecedores_produtos` | Supplier-product association                   |
+| `tbl_clientes_telefone`     | Customer phone numbers                         |
+| `tbl_clientes_email`        | Customer e-mail addresses                      |
+| `tbl_clientes_endereco`     | Customer addresses                             |
+| `tbl_lojas_endereco`        | Store addresses                                |
+| `tbl_fornecedores_endereco` | Supplier addresses                             |
 
 ---
 
-## ⚖️ License
+# 🔗 Relationships
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for more details.
+The model implements 1:N and N:N relationships.
+
+### Customer → Sale
+
+```text
+CUSTOMER 1 ─────────── N SALE
+```
+
+A customer may have multiple sales, while the customer identification in a sale is optional.
+
+### Sale → Sale Item
+
+```text
+SALE 1 ─────────── N SALE_ITEM
+```
+
+### Product → Sale Item
+
+```text
+PRODUCT 1 ─────────── N SALE_ITEM
+```
+
+The association uses:
+
+```text
+id_venda + id_produto
+```
+
+as a composite primary key.
+
+### Supplier ↔ Product
+
+```text
+SUPPLIER N ─── N PRODUCT
+```
+
+The relationship is resolved through:
+
+```text
+tbl_fornecedores_produtos
+```
+
+### Customer ↔ Loyalty Program
+
+```text
+CUSTOMER N ─── N LOYALTY_PROGRAM
+```
+
+The relationship is resolved through:
+
+```text
+tbl_cadastro_fidelidade
+```
+
+---
+
+# 🔐 Data Integrity
+
+The project uses:
+
+* Primary keys;
+* Foreign keys;
+* Composite primary keys;
+* Unique constraints;
+* `NOT NULL`;
+* `AUTO_INCREMENT`;
+* Referential integrity.
+
+Example:
+
+```sql
+CONSTRAINT fk_vendas_clientes
+FOREIGN KEY (id_cliente)
+REFERENCES tbl_clientes (id_cliente)
+```
+
+---
+
+# 💰 Monetary Data
+
+Financial values use:
+
+```sql
+DECIMAL(10,2)
+```
+
+instead of floating-point types.
+
+This provides controlled decimal precision for monetary values.
+
+---
+
+# 🕒 Transaction Traceability
+
+Sales include:
+
+```sql
+venda_data_hora DATETIME
+NOT NULL
+DEFAULT CURRENT_TIMESTAMP
+```
+
+The sale is also associated with:
+
+* Customer, when identified;
+* Store;
+* Employee.
+
+This provides a structured basis for transaction traceability.
+
+---
+
+# 💳 Payments
+
+The `tbl_forma_pagamento` table supports multiple payment records for the same sale.
+
+It stores:
+
+* Payment type;
+* Amount paid;
+* Transaction details;
+* Related sale.
+
+This allows the model to represent split payments.
+
+---
+
+# 📊 Data Analytics Potential
+
+The database structure supports future analytical queries such as:
+
+* Sales by period;
+* Sales by store;
+* Best-selling products;
+* Average ticket;
+* Customer purchase frequency;
+* Customer segmentation;
+* Loyalty analysis;
+* Supplier analysis;
+* Product cost analysis.
+
+The model can therefore serve as a foundation for future **Data Analytics and Business Intelligence solutions**.
+
+---
+
+# 🛠️ Technologies and Concepts
+
+* MySQL
+* SQL
+* Relational databases
+* DDL
+* Primary keys
+* Foreign keys
+* Composite keys
+* Constraints
+* Referential integrity
+* Data modeling
+* Cardinality
+* 1:N relationships
+* N:N relationships
+* Normalization
+* Business requirements
+* Data analysis
+* Business Intelligence
+
+---
+
+# ▶️ How to Run
+
+## Requirements
+
+You need a **MySQL** server or compatible environment such as MySQL Workbench.
+
+## Clone the repository
+
+```bash
+git clone https://github.com/Sponge1774/modelagem_dados_ciclo_vendas_supermercado_sql.git
+```
+
+## Enter the directory
+
+```bash
+cd modelagem_dados_ciclo_vendas_supermercado_sql
+```
+
+## Execute the SQL script
+
+Open:
+
+```text
+ciclo_vendas_supermercado.sql
+```
+
+and execute it using MySQL.
+
+The script creates:
+
+```text
+ciclo_vendas_supermercado
+```
+
+> ⚠️ **Warning:** the script contains `DROP DATABASE IF EXISTS`. Running it will delete an existing database with the same name before recreating it. Use it only in development, study, or laboratory environments.
+
+---
+
+# 📁 Repository Files
+
+* [`ciclo_vendas_supermercado.sql`](ciclo_vendas_supermercado.sql) — SQL database creation script.
+* [`modelo_conceitual-supermercado1.png`](modelo_conceitual-supermercado1.png) — Conceptual model.
+* [`modelo_logico_ciclo_vendas_supermercado.png`](modelo_logico_ciclo_vendas_supermercado.png) — Logical model.
+* [`LICENSE`](LICENSE) — Project license.
+
+---
+
+# 🎓 Academic Context
+
+This project was developed as part of a **Systems Analysis and Development** academic program, applying concepts related to:
+
+* Database systems;
+* Data modeling;
+* SQL;
+* Requirements engineering;
+* Referential integrity;
+* Entity relationships;
+* Data organization for analytics.
+
+---
+
+# 🚧 Future Improvements
+
+Possible future developments include:
+
+* [ ] Add sample data using `INSERT`;
+* [ ] Add analytical SQL queries;
+* [ ] Create reporting `VIEW`s;
+* [ ] Add sales analysis queries;
+* [ ] Implement RFM analysis queries;
+* [ ] Add stored procedures;
+* [ ] Add business-rule triggers;
+* [ ] Add integrity tests;
+* [ ] Create a BI dashboard;
+* [ ] Document the physical model;
+* [ ] Add SQL query examples;
+* [ ] Improve data validation.
+
+---
+
+# 📌 Status
+
+**Academic project — continuously evolving.**
+
+The current model provides a structured relational foundation for supermarket sales and customer loyalty and can be expanded with additional business rules and analytical capabilities.
+
+---
+
+# ⚖️ License
+
+This project is licensed under the **MIT License**.
+
+See the [`LICENSE`](LICENSE) file for details.
